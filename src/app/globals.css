@@ -12,3 +12,38 @@ button { cursor: pointer; touch-action: manipulation; }
 .scrollbar::-webkit-scrollbar-thumb { background: #444; border-radius: 8px; }
 .safe-bottom { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
 @media (max-width: 900px) { .dashboard-grid { grid-template-columns: 1fr !important; } .sidebar { order: 2; } .main-column { order: 1; } }
+
+/* Landscape tablet: keep the whole service board inside the visible viewport. */
+@media (min-width: 760px) and (orientation: landscape) {
+  html, body { height: 100%; overflow: hidden; }
+  .dashboard-app { position: relative; display: flex; height: 100dvh; min-height: 0 !important; flex-direction: column; overflow: hidden; padding: 8px 12px !important; }
+  .dashboard-header { min-height: 50px !important; margin: 0 0 8px !important; padding: 0 0 7px !important; }
+  .dashboard-header > div:first-child > div:first-child { height: 36px; width: 36px; }
+  .dashboard-grid { flex: 1; min-height: 0; grid-template-columns: minmax(230px, 25%) minmax(0, 1fr) !important; align-items: stretch !important; gap: 10px !important; }
+  .sidebar, .main-column { min-height: 0; order: initial !important; }
+  .sidebar { display: flex; }
+  .rotation-panel { display: flex; min-height: 0; width: 100%; flex-direction: column; overflow: hidden; padding: 10px !important; }
+  .rotation-panel > div:first-child { margin-bottom: 6px !important; }
+  .rotation-panel ol { display: grid; min-height: 0; flex: 1; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: minmax(34px, 1fr); gap: 4px !important; overflow: hidden; }
+  .rotation-panel ol li { min-height: 0 !important; padding: 2px 4px !important; }
+  .rotation-panel ol li > span:first-child { height: 25px; width: 25px; }
+  .rotation-panel ol li > div:last-child button { height: 18px; width: 20px; }
+  .rotation-panel > div:last-child { margin-top: 7px !important; padding: 7px 9px !important; }
+  .rotation-panel > div:last-child > div:last-child { margin-top: 0 !important; font-size: 18px; }
+  .main-column { display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; gap: 7px !important; }
+  .main-column > :first-child { min-height: 0 !important; padding: 7px 12px !important; }
+  .main-column > :first-child button { min-height: 40px !important; }
+  .service-heading h2 { margin-top: 0 !important; font-size: 20px !important; }
+  .table-grid { min-height: 0; grid-template-columns: repeat(5, minmax(0, 1fr)) !important; grid-template-rows: repeat(3, minmax(0, 1fr)); gap: 6px !important; }
+  .table-card { min-height: 0 !important; overflow: hidden; padding: 7px !important; }
+  .table-card > div:nth-child(2) { font-size: clamp(24px, 4vh, 38px) !important; }
+  .table-card > div:last-child { padding-top: 3px !important; }
+  .table-card > div:last-child > div:first-child { font-size: 12px !important; }
+  .activity-panel { min-height: 0; padding: 7px 10px !important; }
+  .activity-panel > div:first-child { margin-bottom: 4px !important; }
+  .activity-panel h2 { margin-top: 0 !important; font-size: 13px; }
+  .activity-panel .scrollbar > div { min-width: 0; flex: 1; padding: 5px 8px !important; }
+  .dashboard-app > footer { display: none; }
+  .dashboard-app > [role="alert"], .dashboard-app > [role="status"] { position: absolute; z-index: 20; top: 56px; left: 12px; right: 12px; margin: 0 !important; box-shadow: 0 8px 30px #0009; }
+}
+
