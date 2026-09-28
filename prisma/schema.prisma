@@ -1,0 +1,147 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum TableStatus {
+  FREE
+  OCCUPIED
+  BILLING
+  RESERVED
+}
+
+enum ShiftStatus {
+  OPEN
+  CLOSED
+}
+
+enum ShiftEmployeeStatus {
+  AVAILABLE
+  BREAK
+  EATING
+  OUT
+}
+
+enum AssignmentStatus {
+  OPEN
+  BILLING
+  CLOSED
+}
+
+model Branch {
+  id        String           @id @default(cuid())
+  name      String           @unique
+  slug      String           @unique
+  employees Employee[]
+  tables    RestaurantTable[]
+  shifts    Shift[]
+  events    EventLog[]
+  createdAt DateTime         @default(now())
+}
+
+model Employee {
+  id        String          @id @default(cuid())
+  name      String
+  active    Boolean         @default(true)
+  branchId  String
+  branch    Branch          @relation(fields: [branchId], references: [id])
+  shifts    ShiftEmployee[]
+  assignments TableAssignment[]
+  events    EventLog[]
+  createdAt DateTime        @default(now())
+  @@index([branchId, active])
+}
+
+model RestaurantTable {
+  id                  String       @id @default(cuid())
+  number              Int
+  branchId            String
+  branch              Branch       @relation(fields: [branchId], references: [id])
+  status              TableStatus  @default(FREE)
+  currentAssignmentId String?
+  assignments         TableAssignment[]
+  @@unique([branchId, number])
+  @@index([branchId, status])
+}
+
+model Shift {
+  id        String          @id @default(cuid())
+  branchId  String
+  branch    Branch          @relation(fields: [branchId], references: [id])
+  status    ShiftStatus     @default(OPEN)
+  startedAt DateTime        @default(now())
+  endedAt   DateTime?
+  employees ShiftEmployee[]
+  rotation  RotationEntry[]
+  assignments TableAssignment[]
+  events    EventLog[]
+  @@index([branchId, status])
+}
+
+model ShiftEmployee {
+  id          String              @id @default(cuid())
+  shiftId     String
+  shift       Shift               @relation(fields: [shiftId], references: [id])
+  employeeId  String
+  employee    Employee            @relation(fields: [employeeId], references: [id])
+  arrivalOrder Int
+  arrivedAt   DateTime            @default(now())
+  leftAt      DateTime?
+  status      ShiftEmployeeStatus @default(AVAILABLE)
+  skips       Int                 @default(0)
+  rotation    RotationEntry?
+  @@unique([shiftId, employeeId])
+  @@index([shiftId, arrivalOrder])
+}
+
+model RotationEntry {
+  id              String        @id @default(cuid())
+  shiftId         String
+  shift           Shift         @relation(fields: [shiftId], references: [id])
+  shiftEmployeeId String        @unique
+  shiftEmployee   ShiftEmployee @relation(fields: [shiftEmployeeId], references: [id])
+  position        Int
+  @@unique([shiftId, position])
+  @@index([shiftId, position])
+}
+
+model TableAssignment {
+  id          String           @id @default(cuid())
+  shiftId     String
+  shift       Shift            @relation(fields: [shiftId], references: [id])
+  tableId     String
+  table       RestaurantTable  @relation(fields: [tableId], references: [id])
+  employeeId  String
+  employee    Employee         @relation(fields: [employeeId], references: [id])
+  people      Int
+  status      AssignmentStatus @default(OPEN)
+  manual      Boolean          @default(false)
+  assignedAt  DateTime         @default(now())
+  releasedAt  DateTime?
+  events      EventLog[]
+  @@index([shiftId, assignedAt])
+  @@index([tableId, releasedAt])
+}
+
+model EventLog {
+  id           String           @id @default(cuid())
+  branchId     String
+  branch       Branch           @relation(fields: [branchId], references: [id])
+  shiftId      String?
+  shift        Shift?           @relation(fields: [shiftId], references: [id])
+  employeeId   String?
+  employee     Employee?        @relation(fields: [employeeId], references: [id])
+  assignmentId String?
+  assignment   TableAssignment? @relation(fields: [assignmentId], references: [id])
+  tableNumber  Int?
+  action       String
+  details      String?
+  actor        String           @default("Sin usuario")
+  createdAt    DateTime         @default(now())
+  @@index([branchId, createdAt])
+  @@index([shiftId, createdAt])
+}

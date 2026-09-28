@@ -1,0 +1,8 @@
+node_modules
+.next
+.git
+.cache
+.pnpm-store
+data
+.env
+*.db
