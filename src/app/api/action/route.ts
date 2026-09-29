@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { addEmployee, addTable, arrive, assignTable, closeShift, OperationError, saveRotation, setAvailability, startShift, tableAction, skipNext, toggleEmployee } from "@/lib/operations";
+import { addEmployee, addTable, arrive, assignTable, closeShift, deleteEmployee, deleteTable, OperationError, saveRotation, setAvailability, startShift, tableAction, skipNext, toggleEmployee } from "@/lib/operations";
 
 export const runtime = "nodejs";
 
@@ -26,6 +26,8 @@ export async function POST(request: NextRequest) {
       case "close": result = await closeShift(branchId); break;
       case "addEmployee": result = await addEmployee(branchId, String(body.name || "")); break;
       case "addTable": result = await addTable(branchId, Number(body.number)); break;
+      case "deleteTable": result = await deleteTable(branchId, String(body.tableId || "")); break;
+      case "deleteEmployee": result = await deleteEmployee(branchId, String(body.employeeId || "")); break;
       case "toggleEmployee": {
         result = await toggleEmployee(branchId, String(body.employeeId || ""));
         break;

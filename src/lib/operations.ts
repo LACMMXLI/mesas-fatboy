@@ -219,6 +219,17 @@ export async function addTable(branchId: string, number: number) {
   return serializeWrites(() => prisma.restaurantTable.create({ data: { branchId, number } }));
 }
 
+export async function deleteTable(branchId: string, tableId: string) {
+  return serializeWrites(() => prisma.$transaction(async tx => {
+    const table = await tx.restaurantTable.findFirst({ where: { id: tableId, branchId } });
+    if (!table) throw new OperationError("Mesa no encontrada.", 404);
+    if (table.status !== TableStatus.FREE || table.currentAssignmentId) throw new OperationError("Libera la mesa antes de eliminarla.", 409);
+    if (await tx.tableAssignment.count({ where: { tableId } })) throw new OperationError("Esta mesa tiene historial de servicio y no se puede eliminar.", 409);
+    await tx.restaurantTable.delete({ where: { id: tableId } });
+    return { ok: true };
+  }));
+}
+
 export async function toggleEmployee(branchId: string, employeeId: string) {
   return serializeWrites(() => prisma.$transaction(async tx => {
     const employee = await tx.employee.findFirst({ where: { id: employeeId, branchId } });
@@ -227,5 +238,23 @@ export async function toggleEmployee(branchId: string, employeeId: string) {
     await tx.employee.update({ where: { id: employeeId }, data: { active: !employee.active } });
     await log(tx, { branchId, employeeId, action: employee.active ? "MESERO_INACTIVO" : "MESERO_ACTIVO" });
     return { ok: true };
+  }));
+}
+
+export async function deleteEmployee(branchId: string, employeeId: string) {
+  return serializeWrites(() => prisma.$transaction(async tx => {
+    const employee = await tx.employee.findFirst({ where: { id: employeeId, branchId } });
+    if (!employee) throw new OperationError("Mesero no encontrado.", 404);
+    if (await tx.shiftEmployee.count({ where: { employeeId, leftAt: null, shift: { status: ShiftStatus.OPEN } } })) throw new OperationError("Registra primero la salida del mesero en turno.", 409);
+    const hasHistory = await tx.shiftEmployee.count({ where: { employeeId } })
+      || await tx.tableAssignment.count({ where: { employeeId } })
+      || await tx.eventLog.count({ where: { employeeId } });
+    if (hasHistory) {
+      await tx.employee.update({ where: { id: employeeId }, data: { active: false } });
+      await log(tx, { branchId, employeeId, action: "MESERO_INACTIVO" });
+      return { archived: true };
+    }
+    await tx.employee.delete({ where: { id: employeeId } });
+    return { archived: false };
   }));
 }
