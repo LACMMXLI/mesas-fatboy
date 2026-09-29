@@ -214,6 +214,11 @@ export async function addEmployee(branchId: string, name: string) {
   return serializeWrites(() => prisma.employee.create({ data: { branchId, name: clean } }));
 }
 
+export async function addTable(branchId: string, number: number) {
+  if (!Number.isInteger(number) || number < 1 || number > 999) throw new OperationError("El número de mesa debe estar entre 1 y 999.");
+  return serializeWrites(() => prisma.restaurantTable.create({ data: { branchId, number } }));
+}
+
 export async function toggleEmployee(branchId: string, employeeId: string) {
   return serializeWrites(() => prisma.$transaction(async tx => {
     const employee = await tx.employee.findFirst({ where: { id: employeeId, branchId } });
