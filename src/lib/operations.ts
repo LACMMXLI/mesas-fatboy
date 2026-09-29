@@ -249,6 +249,7 @@ export async function deleteEmployee(branchId: string, employeeId: string) {
     const hasHistory = await tx.shiftEmployee.count({ where: { employeeId } })
       || await tx.tableAssignment.count({ where: { employeeId } })
       || await tx.eventLog.count({ where: { employeeId } });
+    if (hasHistory && !employee.active) throw new OperationError("Este empleado tiene historial y se conserva inactivo para mantener los reportes.", 409);
     if (hasHistory) {
       await tx.employee.update({ where: { id: employeeId }, data: { active: false } });
       await log(tx, { branchId, employeeId, action: "MESERO_INACTIVO" });
