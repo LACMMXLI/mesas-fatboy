@@ -39,7 +39,7 @@ async function nextEligible(tx: Tx, shiftId: string) {
   return entries[0] ?? null;
 }
 
-export async function getSnapshot(branchSlug = "venecia") {
+export async function getSnapshot(branchSlug = "roma") {
   const branch = await prisma.branch.findUnique({ where: { slug: branchSlug } });
   if (!branch) throw new OperationError("No se encontró la sucursal.", 404);
   const [tables, employees, shift, events] = await Promise.all([

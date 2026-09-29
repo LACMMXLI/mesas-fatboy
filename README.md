@@ -48,7 +48,7 @@ Para restaurar, detén la app, copia el backup como `/app/data/fatboy-meseros.db
 
 ## Datos
 
-El seed agrega Venecia, mesas 1–15 y ocho nombres ficticios. Es idempotente. El modelo relaciona turnos y meseros por participación histórica, y la rotación se conserva en registros ordenados independientes. Puedes añadir sucursales, mesas y meseros ajustando datos sin cambiar la forma del modelo.
+El seed crea únicamente el proyecto Roma, sin mesas ni empleados de muestra. Es idempotente. El modelo relaciona turnos y meseros por participación histórica, y la rotación se conserva en registros ordenados independientes. Puedes añadir mesas y meseros desde la pantalla de administración.
 
 ## Verificación
 
